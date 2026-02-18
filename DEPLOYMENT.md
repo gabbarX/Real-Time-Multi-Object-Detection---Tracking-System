@@ -130,3 +130,40 @@ docker run -p 8000:7860 -e PORT=7860 rtmodt
 # With GPU support
 docker run --gpus all -p 8000:7860 -e PORT=7860 rtmodt
 ```
+
+---
+
+## Alternative 2: Render (Free/Cheap CPU Hosting)
+
+If you don't need a GPU and just want a simple demo:
+
+1. Push your code to a GitHub repository.
+2. Sign up at [render.com](https://render.com).
+3. Click **New +** → **Web Service**.
+4. Connect your GitHub repo.
+5. Render will detect `render.yaml` and auto-configure.
+6. Click **Create Web Service**.
+
+> **Note:** The free tier spins down after inactivity (slow first request). Inference will be slower on CPU (~200-500ms).
+
+---
+
+## Alternative 3: Share Local App (Ngrok)
+
+The fastest way to show your running local app to someone else temporarily:
+
+1. Download [ngrok](https://ngrok.com/download).
+2. Start your local server: `python start.py`
+3. In a new terminal, run: `ngrok http 8000`
+4. Copy the `https://xxxx.ngrok-free.app` URL and share it.
+
+---
+
+## Alternative 4: Cloud GPU (AWS/GCP/Lambda)
+
+For scalable production with GPUs (Approx. cost: $30-100/mo):
+
+- **AWS EC2 (g4dn.xlarge)**: Standard T4 GPU instance. Install Docker + Nvidia Container Toolkit.
+- **Google Cloud Run (GPU)**: Now supports GPUs in preview. Deploy the Docker container directly.
+- **Lambda Labs / Vast.ai**: Cheaper GPU instances for renting (~$0.20/hr).
+
