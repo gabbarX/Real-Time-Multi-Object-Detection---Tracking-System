@@ -1,0 +1,71 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rtmodt"
+version = "1.0.0"
+description = "Real-Time Multi-Object Detection & Tracking System (RTSP + Low Latency)"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.10"
+authors = [
+    {name = "RTMODT Team"},
+]
+keywords = ["object-detection", "tracking", "yolov8", "bytetrack", "rtsp", "computer-vision"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Scientific/Engineering :: Image Recognition",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+
+dependencies = [
+    "torch>=2.1.0",
+    "torchvision>=0.16.0",
+    "ultralytics>=8.1.0",
+    "numpy>=1.24.0",
+    "scipy>=1.11.0",
+    "opencv-python-headless>=4.8.0",
+    "pyyaml>=6.0",
+    "click>=8.1.0",
+    "loguru>=0.7.0",
+    "psutil>=5.9.0",
+    "fastapi>=0.110.0",
+    "uvicorn>=0.25.0",
+    "python-multipart>=0.0.6",
+    "aiofiles>=23.0.0",
+]
+
+[project.optional-dependencies]
+tracking = ["lap>=0.4.0", "filterpy>=1.4.5"]
+eval = ["pycocotools>=2.0.7", "motmetrics>=1.4.0"]
+viz = ["supervision>=0.18.0", "Pillow>=10.0.0"]
+tensorrt = ["onnxruntime-gpu>=1.16.0"]
+profiling = ["GPUtil>=1.4.0", "py-cpuinfo>=9.0.0", "tensorboard>=2.14.0"]
+dev = ["pytest>=7.4.0", "ruff>=0.1.0", "pre-commit>=3.5.0"]
+all = ["rtmodt[tracking,eval,viz,profiling,dev]"]
+
+[project.scripts]
+rtmodt = "tools.run_pipeline:main"
+rtmodt-train = "tools.train:main"
+rtmodt-export = "tools.export_model:main"
+rtmodt-web = "web.server:serve"
+
+[tool.setuptools.packages.find]
+include = ["src*", "web*", "tools*"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]

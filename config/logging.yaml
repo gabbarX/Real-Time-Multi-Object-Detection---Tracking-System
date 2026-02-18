@@ -1,0 +1,34 @@
+# ============================================================================
+# Logging Configuration for RTMODT
+# ============================================================================
+# Used by loguru — loaded at startup from config/default.yaml or standalone.
+#
+# Log levels: TRACE, DEBUG, INFO, SUCCESS, WARNING, ERROR, CRITICAL
+#
+# Usage in code:
+#   from loguru import logger
+#   logger.info("Pipeline started")
+# ============================================================================
+
+logging:
+  # Console output
+  console:
+    level: INFO
+    format: "<green>{time:HH:mm:ss}</green> | <level>{level:^8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan> — <level>{message}</level>"
+    colorize: true
+
+  # File output (rotating)
+  file:
+    enabled: true
+    path: logs/rtmodt.log
+    level: DEBUG
+    rotation: "10 MB"
+    retention: "7 days"
+    compression: "zip"
+    format: "{time:YYYY-MM-DD HH:mm:ss.SSS} | {level:^8} | {name}:{function}:{line} — {message}"
+
+  # JSON structured logs (for log aggregation)
+  json:
+    enabled: false
+    path: logs/rtmodt.jsonl
+    level: INFO

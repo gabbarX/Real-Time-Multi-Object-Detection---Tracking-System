@@ -3,6 +3,10 @@
 # =============================================================================
 # Install: pip install -r requirements.txt
 # GPU-specific: install torch+cu121 from https://pytorch.org/get-started/locally/
+#
+# For optional groups, see pyproject.toml or use:
+#   pip install -e ".[tracking,eval,viz,profiling,dev]"
+# =============================================================================
 
 # --- Core ---
 torch>=2.1.0
@@ -10,7 +14,7 @@ torchvision>=0.16.0
 ultralytics>=8.1.0
 onnxruntime-gpu>=1.16.0; sys_platform == "linux"
 onnxruntime>=1.16.0; sys_platform == "win32"
-# tensorrt>=8.6                   # Linux-only; install separately on target GPU host
+# tensorrt>=8.6                   # Linux-only; install via NVIDIA toolkit
 
 # --- Tracking ---
 numpy>=1.24.0
@@ -42,6 +46,12 @@ GPUtil>=1.4.0
 
 # --- TensorBoard ---
 tensorboard>=2.14.0
+
+# --- Web Frontend ---
+fastapi>=0.110.0
+uvicorn>=0.25.0
+python-multipart>=0.0.6
+aiofiles>=23.0.0
 
 # --- Testing ---
 pytest>=7.4.0

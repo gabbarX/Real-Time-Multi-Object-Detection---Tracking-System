@@ -1,0 +1,55 @@
+# ============================================================================
+# .gitignore — RTMODT Project
+# ============================================================================
+
+# ── Python ──
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+*.egg
+.eggs/
+
+# ── Virtual environments ──
+.venv/
+venv/
+env/
+
+# ── IDE ──
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ── OS ──
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Model weights ──
+weights/
+*.pt
+*.onnx
+*.engine
+*.trt
+
+# ── Data & output ──
+datasets/
+output/
+runs/
+logs/
+*.mp4
+*.avi
+*.mkv
+
+# ── Environment ──
+.env
+.env.local
+
+# ── Misc ──
+*.log
+*.csv
+*.jsonl

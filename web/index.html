@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RTMODT — Real-Time Object Detection & Tracking</title>
+  <meta name="description" content="Interactive real-time multi-object detection and tracking system with webcam, image upload, and sample dataset support." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <!-- ─── Animated background ─── -->
+  <div class="bg-grid"></div>
+  <div class="bg-glow bg-glow--1"></div>
+  <div class="bg-glow bg-glow--2"></div>
+
+  <!-- ─── Header ─── -->
+  <header class="header">
+    <div class="header__brand">
+      <div class="header__icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="3"/><circle cx="12" cy="12" r="3"/><path d="M2 8h20M2 16h20M8 2v20M16 2v20"/></svg>
+      </div>
+      <div>
+        <h1 class="header__title">RTMODT</h1>
+        <p class="header__subtitle">Real-Time Multi-Object Detection & Tracking</p>
+      </div>
+    </div>
+    <div class="header__stats" id="headerStats">
+      <div class="stat">
+        <span class="stat__value" id="statObjects">—</span>
+        <span class="stat__label">Objects</span>
+      </div>
+      <div class="stat">
+        <span class="stat__value" id="statLatency">—</span>
+        <span class="stat__label">Latency</span>
+      </div>
+      <div class="stat">
+        <span class="stat__value" id="statFPS">—</span>
+        <span class="stat__label">FPS</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ─── Mode switcher ─── -->
+  <nav class="mode-nav">
+    <button class="mode-btn active" data-mode="samples" onclick="switchMode('samples')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      <span>Sample Dataset</span>
+    </button>
+    <button class="mode-btn" data-mode="upload" onclick="switchMode('upload')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      <span>Upload</span>
+    </button>
+    <button class="mode-btn" data-mode="webcam" onclick="switchMode('webcam')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+      <span>Webcam</span>
+    </button>
+  </nav>
+
+  <!-- ─── Main content area ─── -->
+  <main class="main">
+
+    <!-- ── Samples panel ── -->
+    <section class="panel panel--samples" id="panelSamples">
+      <h2 class="panel__title">Try a Sample Image</h2>
+      <p class="panel__desc">Click any image below to run object detection on it — no uploads needed.</p>
+      <div class="sample-grid" id="sampleGrid">
+        <div class="sample-grid__loading">Loading samples…</div>
+      </div>
+    </section>
+
+    <!-- ── Upload panel ── -->
+    <section class="panel panel--upload hidden" id="panelUpload">
+      <h2 class="panel__title">Upload Image or Video</h2>
+      <p class="panel__desc">Drag &amp; drop or click to select an image or video file.</p>
+      <div class="drop-zone" id="dropZone">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="drop-zone__icon"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        <p class="drop-zone__text">Drop file here or <span class="drop-zone__link">browse</span></p>
+        <p class="drop-zone__hint">Supports JPG, PNG, WEBP, MP4</p>
+        <input type="file" id="fileInput" accept="image/*,video/*" hidden />
+      </div>
+    </section>
+
+    <!-- ── Webcam panel ── -->
+    <section class="panel panel--webcam hidden" id="panelWebcam">
+      <h2 class="panel__title">Live Webcam Detection</h2>
+      <p class="panel__desc">Stream your webcam and detect objects in real-time.</p>
+      <div class="webcam-controls">
+        <button class="btn btn--primary" id="btnStartCam" onclick="toggleWebcam()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+          Start Camera
+        </button>
+        <label class="webcam-interval">
+          <span>Interval</span>
+          <select id="webcamInterval">
+            <option value="200">200ms</option>
+            <option value="500" selected>500ms</option>
+            <option value="1000">1s</option>
+            <option value="2000">2s</option>
+          </select>
+        </label>
+      </div>
+      <video id="webcamVideo" autoplay playsinline muted hidden></video>
+    </section>
+
+    <!-- ─── Detection result canvas ─── -->
+    <section class="result-section" id="resultSection" style="display:none">
+      <div class="result-card">
+        <div class="result-card__header">
+          <h3>Detection Results</h3>
+          <span class="badge" id="resultBadge">0 objects</span>
+        </div>
+        <div class="canvas-wrap" id="canvasWrap">
+          <canvas id="resultCanvas"></canvas>
+        </div>
+        <div class="detections-list" id="detectionsList"></div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ─── Loader overlay ─── -->
+  <div class="loader-overlay" id="loader" style="display:none">
+    <div class="loader-spinner"></div>
+    <p class="loader-text">Running detection…</p>
+  </div>
+
+  <!-- ─── Toast ─── -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

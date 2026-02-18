@@ -16,6 +16,7 @@
 | F | [Productionization](#f-productionization) | — |
 | G | [Risk Analysis & Optimization](#g-risk-analysis--optimization) | — |
 | H | [Benchmark Report Template](#h-benchmark-report-template) | — |
+| I | [Web Frontend Architecture](#i-web-frontend-architecture) | — |
 
 ---
 
@@ -1162,3 +1163,108 @@ for frame_id in range(total_frames):
 | `n_init` | 3 | Frames before a tentative track is confirmed |
 | `nn_budget` | 100 | Max gallery size per track for appearance features |
 | `embedder` | OSNet x0.25 | Lightweight Re-ID backbone (2.2M params) |
+
+---
+
+# I. Web Frontend Architecture
+
+## I.1 Overview
+
+The web frontend provides an interactive browser-based interface for the RTMODT system, supporting three detection modes: pre-loaded sample images, user-uploaded files, and live webcam streams.
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                      Browser (SPA)                              │
+│  ┌──────────┐  ┌──────────┐  ┌───────────┐  ┌──────────────┐  │
+│  │ Samples  │  │ Upload   │  │  Webcam   │  │ Canvas       │  │
+│  │ Grid     │  │ Drop Zone│  │  Stream   │  │ Renderer     │  │
+│  └────┬─────┘  └────┬─────┘  └────┬──────┘  └──────────────┘  │
+│       │              │             │                            │
+│       ▼              ▼             ▼                            │
+│  ┌──────────────────────────────────────────────────────────┐  │
+│  │               REST API (fetch / JSON)                    │  │
+│  └──────────────────────────┬───────────────────────────────┘  │
+└─────────────────────────────┼──────────────────────────────────┘
+                              │ HTTP
+┌─────────────────────────────▼──────────────────────────────────┐
+│                    FastAPI Server (Uvicorn)                     │
+│  ┌────────────┐  ┌────────────────┐  ┌──────────────────────┐ │
+│  │ Static     │  │ /api/detect/*  │  │ YOLOv8s Model        │ │
+│  │ Files      │  │ endpoints      │  │ (lazy-loaded)        │ │
+│  └────────────┘  └────────────────┘  └──────────────────────┘ │
+└───────────────────────────────────────────────────────────────┘
+```
+
+## I.2 Backend — FastAPI
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/` | GET | Serves `index.html` SPA |
+| `/static/*` | GET | CSS, JS, sample images |
+| `/api/samples` | GET | List available sample images with URLs |
+| `/api/detect/image` | POST | Upload image file → detection JSON |
+| `/api/detect/frame` | POST | Base64-encoded webcam frame → detection JSON |
+| `/api/detect/sample/{filename}` | GET | Run detection on a pre-loaded sample |
+
+### Detection Response Schema
+
+```json
+{
+  "detections": [
+    {
+      "bbox": [x1, y1, x2, y2],
+      "confidence": 0.92,
+      "class_id": 0,
+      "class_name": "person"
+    }
+  ],
+  "tracks": [],
+  "inference_ms": 12.5,
+  "num_objects": 3,
+  "image_size": [640, 480]
+}
+```
+
+### Model Loading Strategy
+
+- **Lazy initialization** — the YOLOv8s model is loaded on the first API request, not at server startup.
+- **Auto-download** — `ultralytics.YOLO("yolov8s.pt")` auto-downloads the pretrained weights (~22 MB) if not cached.
+- **Singleton** — the model is stored in a module-level global and reused across all requests.
+
+## I.3 Frontend — SPA
+
+The frontend is a single-page application built with vanilla HTML, CSS, and JavaScript:
+
+| File | Purpose |
+|------|--------|
+| `index.html` | Page structure, mode panels, result canvas |
+| `static/style.css` | Dark-mode theme with glassmorphism, animations |
+| `static/app.js` | Mode switching, API calls, canvas rendering |
+
+### Canvas Rendering Pipeline
+
+1. Load the source image onto an HTML5 `<canvas>`
+2. Scale canvas to image dimensions
+3. Draw bounding boxes with class-specific colors
+4. Render labels with confidence percentages
+5. Update header stats (objects, latency, FPS)
+
+### Webcam Mode
+
+- Uses `navigator.mediaDevices.getUserMedia()` for camera access
+- Captures frames at a configurable interval (default: 500ms)
+- Encodes frames as JPEG base64 via `<canvas>.toDataURL()`
+- POSTs to `/api/detect/frame` and overlays results in real-time
+
+## I.4 Deployment
+
+```bash
+# Development
+python web/server.py --reload
+
+# Production (behind reverse proxy)
+uvicorn web.server:app --host 0.0.0.0 --port 8000 --workers 4
+
+# Docker
+docker run --gpus all -p 8000:8000 rtmodt
+```
