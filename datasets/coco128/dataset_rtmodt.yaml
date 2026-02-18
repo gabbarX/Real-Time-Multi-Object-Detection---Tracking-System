@@ -1,0 +1,9 @@
+path: D:\Project\Real-Time Multi-Object Detection & Tracking System\datasets\coco128
+train: images/train
+val: images/val
+nc: 2
+names:
+  0: person
+  1: vehicle
+_note: Labels use full COCO 80-class IDs. Set detection.classes in default.yaml to
+  [0,1,2,3,5,7] to filter at inference.

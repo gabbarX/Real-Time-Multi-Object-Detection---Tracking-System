@@ -1,0 +1,106 @@
+# ============================================================================
+# Real-Time Multi-Object Detection & Tracking System — Master Configuration
+# ============================================================================
+
+system:
+  device: "cuda:0"                # CUDA device ordinal
+  precision: "fp16"               # fp16 | fp32 | int8
+  num_workers: 4                  # dataloader / IO workers
+  log_level: "INFO"               # DEBUG | INFO | WARNING | ERROR
+  log_dir: "logs/"
+  output_dir: "output/"
+
+# ---------------------------------------------------------------------------
+# RTSP Ingestion
+# ---------------------------------------------------------------------------
+ingestion:
+  source: "rtsp://admin:pass@192.168.1.64:554/stream1"
+  backend: "gstreamer"            # gstreamer | opencv
+  reconnect_delay_sec: 3
+  max_reconnect_attempts: 10
+  buffer_size: 1                  # frames — keep at 1 for lowest latency
+  drop_stale_frames: true
+  target_fps: 30
+  resolution:
+    width: 1920
+    height: 1080
+
+# ---------------------------------------------------------------------------
+# Detection
+# ---------------------------------------------------------------------------
+detection:
+  model_path: "weights/yolov8s.engine"   # TensorRT engine preferred
+  fallback_model: "weights/yolov8s.pt"   # PyTorch fallback
+  input_size: [640, 640]
+  batch_size: 1
+  confidence_threshold: 0.35
+  nms_iou_threshold: 0.45
+  max_detections: 100
+  classes: [0, 1, 2, 3, 5, 7]              # person, bicycle, car, motorcycle, bus, truck
+  agnostic_nms: false
+  half: true                             # FP16 inference
+
+# ---------------------------------------------------------------------------
+# Tracking
+# ---------------------------------------------------------------------------
+tracking:
+  algorithm: "bytetrack"          # bytetrack | deepsort
+  bytetrack:
+    track_thresh: 0.5
+    track_buffer: 30              # frames to retain lost tracks
+    match_thresh: 0.8
+    mot20: false
+  deepsort:
+    max_dist: 0.2
+    min_confidence: 0.3
+    max_iou_distance: 0.7
+    max_age: 70
+    n_init: 3
+    nn_budget: 100
+    embedder: "weights/osnet_x0_25.onnx"
+
+# ---------------------------------------------------------------------------
+# Event Engine
+# ---------------------------------------------------------------------------
+events:
+  enabled: true
+  zones:
+    - name: "restricted_area_1"
+      polygon: [[100,200],[400,200],[400,600],[100,600]]
+      trigger: "intrusion"
+      dwell_time_sec: 2.0
+      cooldown_sec: 10.0
+    - name: "exit_gate"
+      polygon: [[800,400],[1200,400],[1200,700],[800,700]]
+      trigger: "crossing"
+      direction: "left_to_right"
+      cooldown_sec: 5.0
+  alert:
+    backend: "json_file"          # json_file | webhook | mqtt
+    webhook_url: ""
+    log_path: "logs/events.jsonl"
+
+# ---------------------------------------------------------------------------
+# Profiling
+# ---------------------------------------------------------------------------
+profiling:
+  enabled: true
+  warmup_frames: 50
+  log_interval_frames: 100
+  gpu_sync: true                  # torch.cuda.synchronize() before timing
+
+# ---------------------------------------------------------------------------
+# Visualization
+# ---------------------------------------------------------------------------
+visualization:
+  enabled: true
+  show_boxes: true
+  show_ids: true
+  show_trails: true
+  trail_length: 30
+  show_zones: true
+  show_fps: true
+  window_name: "RTMODT Live"
+  save_video: false
+  save_path: "output/recording.mp4"
+  codec: "mp4v"

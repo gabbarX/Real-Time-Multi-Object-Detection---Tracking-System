@@ -1,0 +1,21 @@
+version: "3.9"
+
+services:
+  rtmodt:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: rtmodt:latest
+    container_name: rtmodt_live
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility,video
+    volumes:
+      - ./config:/app/config:ro
+      - ./weights:/app/weights:ro
+      - ./output:/app/output
+      - ./logs:/app/logs
+    network_mode: host # simplest for RTSP on LAN
+    restart: unless-stopped
+    command: [ "--config", "config/default.yaml" ]
