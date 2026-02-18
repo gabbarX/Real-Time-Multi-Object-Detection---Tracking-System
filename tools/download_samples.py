@@ -14,7 +14,7 @@ SAMPLES = {
     "skating_ring.jpg":   "http://images.cocodataset.org/val2017/000000087038.jpg",
     "cool_bike_.jpg":  "http://images.cocodataset.org/val2017/000000007386.jpg",
     "kitchen_counter.jpg":    "http://images.cocodataset.org/val2017/000000037777.jpg",
-    "Tennis_player.jpg":"http://farm4.staticflickr.com/3158/2996782298_bf54af224d_z.jpg"
+    "Tennis_player.jpg":"http://farm4.staticflickr.com/3158/2996782298_bf54af224d_z.jpg",
     "Food.jpg":"http://farm6.staticflickr.com/5084/5256361266_faa0448b7e_z.jpg"
 }
 

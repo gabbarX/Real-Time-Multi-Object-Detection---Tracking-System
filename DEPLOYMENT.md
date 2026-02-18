@@ -37,7 +37,7 @@ cd "d:\Project\Real-Time Multi-Object Detection & Tracking System"
 git lfs install
 
 # Add the HF Spaces remote
-git remote add space https://huggingface.co/spaces/YOUR_USERNAME/rtmodt
+git remote add space https://huggingface.co/spaces/iamgabbarxd/rtmodt
 
 # Commit all files
 git add -A

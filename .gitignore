@@ -44,6 +44,7 @@ logs/
 *.mp4
 *.avi
 *.mkv
+web/static/samples/*.jpg
 
 # ── Environment ──
 .env
